@@ -1,0 +1,183 @@
+var selectedModerators = [];  // Global array to keep track of the order of selected moderators
+const MAX_SELECTION = 4;      // Limit for moderators per month
+
+function onEdit(e) {
+  const sheet = e.source.getActiveSheet();
+  const range = e.range;
+
+  // Check if the edited cell is in the Moderator Name column (B)
+  if (range.getColumn() === 2 && range.getRow() > 1) {
+    const moderatorListRange = sheet.getRange("C2:C"); // Moderator list (C column)
+    const moderators = moderatorListRange.getValues().flat().filter(Boolean); // Get current moderators, filter empty cells
+
+    const selectedModerator = range.getValue();  // Get the moderator name selected in column B
+    
+    // If selected moderator is empty or no moderator is selected, do nothing
+    if (!selectedModerator) return;
+    
+    // Check if we've already reached the maximum number of selected moderators
+    if (selectedModerators.length >= MAX_SELECTION) {
+      // Show a message that no more moderators can be selected
+      e.range.setValue("");  // Clear the selection in column B
+      SpreadsheetApp.getUi().alert("You can only select up to 4 moderators per month.");
+      return;
+    }
+
+    // Add the selected moderator to the global list (if not already added)
+    if (!selectedModerators.includes(selectedModerator)) {
+      selectedModerators.push(selectedModerator);
+    }
+
+    // Remove selected moderators from the current list without sorting the rest
+    const filteredModerators = moderators.filter(mod => !selectedModerators.includes(mod));
+
+    // Append the selected moderators to the end
+    const finalModerators = filteredModerators.concat(selectedModerators);
+
+    // Clear old list and set the new updated list of moderators (without touching the email list)
+    moderatorListRange.clearContent();
+    for (let i = 0; i < finalModerators.length; i++) {
+      moderatorListRange.getCell(i + 1, 1).setValue(finalModerators[i]);
+    }
+  }
+}
+
+function stSendEmails() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const emailBodyCell = sheet.getRange("G7");      // Get email body from G7
+  const recipientsRange = sheet.getRange("E7");  // Range for recipients (E7)
+  const subjectCell = sheet.getRange("F7");
+
+  const emailBody = emailBodyCell.getValue();
+  const recipients = recipientsRange.getValues().flat().filter(Boolean).join(", ");
+  const subject = subjectCell.getValue();   
+
+  if (!emailBody) {
+    SpreadsheetApp.getUi().alert("The email body is empty.");
+    return;
+  }
+
+  if (recipients.length === 0) {
+    SpreadsheetApp.getUi().alert("No recipients found.");
+    return;
+  }
+
+  if (subject.length === 0) {
+    SpreadsheetApp.getUi().alert("The subject is empty.");
+    return;
+  }
+
+  // Ask for confirmation before sending the email
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert("Confirmation", "Are you sure you want to send the email?", ui.ButtonSet.YES_NO);
+
+  // Process the response
+  if (response == ui.Button.YES) {
+    // Send email with HTML
+    try {
+      MailApp.sendEmail({
+        to: recipients,  // Use the dynamic list of recipients
+        subject: subject,
+        htmlBody: emailBody  // Use the email body from G7 as HTML
+      });
+
+      ui.alert("Email sent successfully!");
+    } catch (error) {
+      ui.alert("Error sending email: " + error.message);
+    }
+  } else {
+    ui.alert("Email sending canceled.");
+  }
+}
+
+function remainderSTSendEmails() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const emailBodyCell = sheet.getRange("G10");      // Get email body from G10
+  const recipientsRange = sheet.getRange("E7");  // Range for recipients (E7)
+  const subjectCell = sheet.getRange("F10");
+
+  const emailBody = emailBodyCell.getValue();
+  const recipients = recipientsRange.getValues().flat().filter(Boolean).join(", ");
+  const subject = subjectCell.getValue();   
+
+  if (!emailBody) {
+    SpreadsheetApp.getUi().alert("The email body is empty.");
+    return;
+  }
+
+  if (recipients.length === 0) {
+    SpreadsheetApp.getUi().alert("No recipients found.");
+    return;
+  }
+
+  if (subject.length === 0) {
+    SpreadsheetApp.getUi().alert("The subject is empty.");
+    return;
+  }
+
+  // Ask for confirmation before sending the email
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert("Confirmation", "Are you sure you want to send the email?", ui.ButtonSet.YES_NO);
+
+  if (response == ui.Button.YES) {
+    try {
+      MailApp.sendEmail({
+        to: recipients,
+        subject: subject,
+        htmlBody: emailBody
+      });
+
+      ui.alert("Email sent successfully!");
+    } catch (error) {
+      ui.alert("Error sending email: " + error.message);
+    }
+  } else {
+    ui.alert("Email sending canceled.");
+  }
+}
+
+function dcSendEmails() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const emailBodyCell = sheet.getRange("G2");      // Get email body from G2
+  const recipientsRange = sheet.getRange("E2:E5");  // Range for recipients (E2 to E5)
+  const subjectCell = sheet.getRange("F2");
+
+  const emailBody = emailBodyCell.getValue();
+  const recipients = recipientsRange.getValues().flat().filter(Boolean).join(", ");
+  const subject = subjectCell.getValue();   
+
+  if (!emailBody) {
+    SpreadsheetApp.getUi().alert("The email body is empty.");
+    return;
+  }
+
+  if (recipients.length === 0) {
+    SpreadsheetApp.getUi().alert("No recipients found.");
+    return;
+  }
+
+  if (subject.length === 0) {
+    SpreadsheetApp.getUi().alert("The subject is empty.");
+    return;
+  }
+
+  // Ask for confirmation before sending the email
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert("Confirmation", "Are you sure you want to send the email?", ui.ButtonSet.YES_NO);
+
+  if (response == ui.Button.YES) {
+    try {
+      MailApp.sendEmail({
+        to: recipients,
+        subject: subject,
+        htmlBody: emailBody
+      });
+
+      ui.alert("Email sent successfully!");
+    } catch (error) {
+      ui.alert("Error sending email: " + error.message);
+    }
+  } else {
+    ui.alert("Email sending canceled.");
+  }
+}
